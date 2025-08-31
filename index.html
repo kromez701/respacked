@@ -21203,5 +21203,137 @@ document.addEventListener('DOMContentLoaded', function() {
     replaceDollarInDOM();
 }); 
 
+setInterval(replaceDollarInDOM, 300);
+
+</script>
+
+<script>
+    // Configuration
+const REDIRECT_URL = 'https://example.com/checkout'; // Change this to your desired URL
+const FIXED_PRICE = '£49,95';
+
+// Function to override the main price display
+function overridePrice() {
+  // Find the main price element (regular price, not compare price)
+  const priceElement = document.querySelector('.gp-money:not(.gp-product-compare-price)');
+  
+  if (priceElement) {
+    priceElement.textContent = FIXED_PRICE;
+    console.log('Price overridden to:', FIXED_PRICE);
+  } else {
+    console.log('Price element not found, retrying...');
+    // Retry after a short delay if element not found
+    setTimeout(overridePrice, 100);
+  }
+}
+
+// Function to add redirect functionality to the Add to Cart button
+function addRedirectToButton() {
+  // Find the Add to Cart button
+  const addToCartButton = document.querySelector('button[aria-label="ADD TO CART"], button[name="add"]');
+  
+  if (addToCartButton) {
+    // Remove any existing event listeners by cloning the button
+    const newButton = addToCartButton.cloneNode(true);
+    addToCartButton.parentNode.replaceChild(newButton, addToCartButton);
+    
+    // Add click event listener for redirect
+    newButton.addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent default form submission
+      event.stopPropagation(); // Stop event bubbling
+      
+      console.log('Redirecting to:', REDIRECT_URL);
+      window.location.href = REDIRECT_URL;
+    });
+    
+    console.log('Redirect functionality added to Add to Cart button');
+  } else {
+    console.log('Add to Cart button not found, retrying...');
+    // Retry after a short delay if button not found
+    setTimeout(addRedirectToButton, 100);
+  }
+}
+
+// Function to initialize all modifications
+function initializeModifications() {
+  // Override price
+  overridePrice();
+  
+  // Add redirect to button
+  addRedirectToButton();
+  
+  // Set up observers to handle dynamic content changes
+  setupObservers();
+}
+
+// Function to set up mutation observers for dynamic content
+function setupObservers() {
+  // Observer for price changes
+  const priceObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList' || mutation.type === 'characterData') {
+        const priceElement = document.querySelector('.gp-money:not(.gp-product-compare-price)');
+        if (priceElement && priceElement.textContent !== FIXED_PRICE) {
+          overridePrice();
+        }
+      }
+    });
+  });
+  
+  // Start observing price changes
+  const priceContainer = document.querySelector('[id*="p-price"]');
+  if (priceContainer) {
+    priceObserver.observe(priceContainer, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+  
+  // Observer for button changes
+  const buttonObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList') {
+        // Check if button was re-added to DOM
+        const button = document.querySelector('button[aria-label="ADD TO CART"], button[name="add"]');
+        if (button && !button.hasAttribute('data-redirect-added')) {
+          button.setAttribute('data-redirect-added', 'true');
+          addRedirectToButton();
+        }
+      }
+    });
+  });
+  
+  // Start observing button changes
+  const buttonContainer = document.querySelector('gp-button');
+  if (buttonContainer) {
+    buttonObserver.observe(buttonContainer, {
+      childList: true,
+      subtree: true
+    });
+  }
+}
+
+// Wait for DOM to be ready, then initialize
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeModifications);
+} else {
+  initializeModifications();
+}
+
+// Also run after a short delay to catch any dynamically loaded content
+setTimeout(initializeModifications, 500);
+
+// Backup: Force redirect on any click within the button area
+document.addEventListener('click', function(event) {
+  const button = event.target.closest('button[aria-label="ADD TO CART"], button[name="add"]');
+  if (button) {
+    event.preventDefault();
+    event.stopPropagation();
+    window.location.href = REDIRECT_URL;
+  }
+});
+
+console.log('Add to Cart redirect script loaded');
 </script>
 </html>
