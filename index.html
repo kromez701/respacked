@@ -21209,7 +21209,7 @@ setInterval(replaceDollarInDOM, 300);
 
 <script>
     // Configuration
-const REDIRECT_URL = 'https://example.com/checkout'; // Change this to your desired URL
+const REDIRECT_URL = 'https://n2kzpa-uw.myshopify.com/cart/52331118788941:1'; // Change this to your desired URL
 const FIXED_PRICE = '£49,95';
 
 // Function to override the main price display
@@ -21250,7 +21250,7 @@ function addRedirectToButton() {
   } else {
     console.log('Add to Cart button not found, retrying...');
     // Retry after a short delay if button not found
-    setTimeout(addRedirectToButton, 100);
+    addRedirectToButton();
   }
 }
 
