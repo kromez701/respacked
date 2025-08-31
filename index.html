@@ -21336,4 +21336,156 @@ document.addEventListener('click', function(event) {
 
 console.log('Add to Cart redirect script loaded');
 </script>
+
+
+<script>
+    // Configuration for GET YOURS NOW button redirect
+const GET_YOURS_NOW_REDIRECT_URL = '/';
+
+// Function to add redirect functionality to GET YOURS NOW button
+function addGetYoursNowRedirect() {
+  // Multiple selectors to find the GET YOURS NOW button
+  const selectors = [
+    'button[aria-label="GET YOURS NOW"]',
+    'button[name="add"]',
+    'button[data-id="gi1BRSENVo"]',
+    'button.gi1BRSENVo',
+    'button:contains("GET YOURS NOW")', // This won't work in CSS but we'll handle it differently
+    '[data-id="gi1BRSENVo"]'
+  ];
+  
+  let button = null;
+  
+  // Try each selector
+  for (const selector of selectors) {
+    button = document.querySelector(selector);
+    if (button) break;
+  }
+  
+  // If no button found with selectors, search by text content
+  if (!button) {
+    const allButtons = document.querySelectorAll('button');
+    for (const btn of allButtons) {
+      if (btn.textContent && btn.textContent.includes('GET YOURS NOW')) {
+        button = btn;
+        break;
+      }
+    }
+  }
+  
+  if (button) {
+    // Mark button as processed to avoid duplicate listeners
+    if (button.hasAttribute('data-redirect-processed')) {
+      return;
+    }
+    button.setAttribute('data-redirect-processed', 'true');
+    
+    // Remove any existing event listeners by cloning the button
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+    newButton.setAttribute('data-redirect-processed', 'true');
+    
+    // Add multiple event listeners to ensure redirect happens
+    const redirectFunction = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      
+      console.log('GET YOURS NOW button clicked - redirecting to:', GET_YOURS_NOW_REDIRECT_URL);
+      window.location.href = GET_YOURS_NOW_REDIRECT_URL;
+      return false;
+    };
+    
+    // Add multiple event types to catch any interaction
+    newButton.addEventListener('click', redirectFunction, true);
+    newButton.addEventListener('mousedown', redirectFunction, true);
+    newButton.addEventListener('touchstart', redirectFunction, true);
+    
+    // Override any onclick attributes
+    newButton.onclick = redirectFunction;
+    newButton.onmousedown = redirectFunction;
+    
+    console.log('GET YOURS NOW redirect functionality added');
+  } else {
+    console.log('GET YOURS NOW button not found, retrying...');
+    // Retry after a short delay
+    setTimeout(addGetYoursNowRedirect, 100);
+  }
+}
+
+// Function to set up mutation observer for dynamic button changes
+function setupGetYoursNowObserver() {
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList') {
+        // Check for new buttons added to DOM
+        mutation.addedNodes.forEach(function(node) {
+          if (node.nodeType === 1) { // Element node
+            // Check if the node itself is a button or contains buttons
+            const buttons = node.tagName === 'BUTTON' ? [node] : node.querySelectorAll ? node.querySelectorAll('button') : [];
+            
+            buttons.forEach(function(btn) {
+              if ((btn.getAttribute('aria-label') === 'GET YOURS NOW' || 
+                   btn.textContent.includes('GET YOURS NOW') ||
+                   btn.getAttribute('data-id') === 'gi1BRSENVo') &&
+                  !btn.hasAttribute('data-redirect-processed')) {
+                addGetYoursNowRedirect();
+              }
+            });
+          }
+        });
+      }
+    });
+  });
+  
+  // Observe the entire document for changes
+  observer.observe(document.body || document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+  
+  console.log('GET YOURS NOW button observer set up');
+}
+
+// Initialize when DOM is ready
+function initializeGetYoursNowRedirect() {
+  addGetYoursNowRedirect();
+  setupGetYoursNowObserver();
+}
+
+// Run immediately if DOM is ready, otherwise wait
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeGetYoursNowRedirect);
+} else {
+  initializeGetYoursNowRedirect();
+}
+
+// Additional safety nets - run multiple times to catch dynamic content
+setTimeout(initializeGetYoursNowRedirect, 100);
+setTimeout(initializeGetYoursNowRedirect, 500);
+setTimeout(initializeGetYoursNowRedirect, 1000);
+
+// Global click interceptor as final fallback
+document.addEventListener('click', function(event) {
+  const target = event.target;
+  const button = target.closest('button');
+  
+  if (button && (
+    button.getAttribute('aria-label') === 'GET YOURS NOW' ||
+    button.textContent.includes('GET YOURS NOW') ||
+    button.getAttribute('data-id') === 'gi1BRSENVo' ||
+    button.classList.contains('gi1BRSENVo')
+  )) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    
+    console.log('Global interceptor caught GET YOURS NOW click - redirecting');
+    window.location.href = GET_YOURS_NOW_REDIRECT_URL;
+    return false;
+  }
+}, true); // Use capture phase to intercept early
+
+console.log('GET YOURS NOW redirect script loaded - will redirect to "/"');
+</script>
 </html>
