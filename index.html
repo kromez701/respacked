@@ -21168,4 +21168,31 @@ font-size: 12px;
 </script>
 
 </div></body>
+
+<script>
+
+    function replaceDollarInDOM() {
+    // Replace in all text nodes
+    const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+    
+    let node;
+    while (node = walker.nextNode()) {
+        if (node.textContent.includes('€')) {
+            node.textContent = node.textContent.replace(/€/g, '£');
+        }
+    }
+
+    console.log("work")
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    replaceDollarInDOM();
+}); 
+
+</script>
 </html>
